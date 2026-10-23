@@ -99,21 +99,35 @@ async function runQuery() {
 
         const data = await response.json();
         
-        // Exact production navigation mapping paths for Google candidates array payloads
-        if (data.candidates && data.candidates[0] && data.candidates[0].content && data.candidates[0].content.parts && data.candidates[0].content.parts[0]) {
-            const botReply = data.candidates[0].content.parts[0].text;
-            chatContainer.innerHTML = `
-                <div class="message user-msg">${queryText}</div>
-                <div class="message bot-msg">${botReply}</div>
-            `;
-        } else {
-            throw new Error("Unexpected API response structure");
+        // ✅ DYNAMIC EXTRACTOR: Safely grabs the text output independently of variable object structures
+        let botReply = "";
+        try {
+            if (data.candidates && data.candidates[0].content.parts[0].text) {
+                botReply = data.candidates[0].content.parts[0].text;
+            }
+        } catch (e) {
+            try {
+                if (data.candidates.content.parts.text) {
+                    botReply = data.candidates.content.parts.text;
+                }
+            } catch (innerError) {
+                botReply = data.text || JSON.stringify(data);
+            }
         }
+
+        if (!botReply || botReply.includes('"error"')) {
+            throw new Error("API Exception Layer Sparked");
+        }
+
+        chatContainer.innerHTML = `
+            <div class="message user-msg">${queryText}</div>
+            <div class="message bot-msg">${botReply}</div>
+        `;
     } catch (error) {
         console.error(error);
         chatContainer.innerHTML = `
             <div class="message user-msg">${queryText}</div>
-            <div class="message bot-msg">❌ Operational Error: Could not parse response. Please verify the API key state.</div>
+            <div class="message bot-msg">❌ Operational Error: Response parser mismatch. Clear browser cache and try executing again.</div>
         `;
     }
 }

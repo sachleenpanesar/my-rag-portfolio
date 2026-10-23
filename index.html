@@ -99,35 +99,36 @@ async function runQuery() {
 
         const data = await response.json();
         
-        // ✅ DYNAMIC EXTRACTOR: Safely grabs the text output independently of variable object structures
-        let botReply = "";
-        try {
-            if (data.candidates && data.candidates[0].content.parts[0].text) {
-                botReply = data.candidates[0].content.parts[0].text;
-            }
-        } catch (e) {
-            try {
-                if (data.candidates.content.parts.text) {
-                    botReply = data.candidates.content.parts.text;
-                }
-            } catch (innerError) {
-                botReply = data.text || JSON.stringify(data);
-            }
+        // 1. Check if Google returned an explicit API error first
+        if (data.error) {
+            chatContainer.innerHTML = `
+                <div class="message user-msg">${queryText}</div>
+                <div class="message bot-msg" style="color: #dc2626; background-color: #fef2f2; border: 1px solid #fca5a5;">
+                    ⚠️ Google API Error ${data.error.code}: ${data.error.message}
+                </div>
+            `;
+            return;
         }
 
-        if (!botReply || botReply.includes('"error"')) {
-            throw new Error("API Exception Layer Sparked");
+        // 2. Extract answer text using standard object mapping rules
+        if (data.candidates && data.candidates[0] && data.candidates[0].content && data.candidates[0].content.parts && data.candidates[0].content.parts[0]) {
+            const botReply = data.candidates[0].content.parts[0].text;
+            chatContainer.innerHTML = `
+                <div class="message user-msg">${queryText}</div>
+                <div class="message bot-msg">${botReply}</div>
+            `;
+        } else {
+            // Display raw structure if everything else fails
+            chatContainer.innerHTML = `
+                <div class="message user-msg">${queryText}</div>
+                <div class="message bot-msg">⚠️ Unexpected Server Output: ${JSON.stringify(data)}</div>
+            `;
         }
-
-        chatContainer.innerHTML = `
-            <div class="message user-msg">${queryText}</div>
-            <div class="message bot-msg">${botReply}</div>
-        `;
     } catch (error) {
         console.error(error);
         chatContainer.innerHTML = `
             <div class="message user-msg">${queryText}</div>
-            <div class="message bot-msg">❌ Operational Error: Response parser mismatch. Clear browser cache and try executing again.</div>
+            <div class="message bot-msg">❌ Network Error: Failed to fetch data from server.</div>
         `;
     }
 }

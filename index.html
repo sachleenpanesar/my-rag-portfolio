@@ -78,7 +78,7 @@ async function runQuery() {
         return;
     }
 
-    chatContainer.innerHTML = `<div class="message user-msg">${queryText}</div><div class="message bot-msg">🔍 Scanning raw text data...</div>`;
+    chatContainer.innerHTML = '<div class="message user-msg">' + queryText + '</div><div class="message bot-msg">🔍 Scanning raw text data...</div>';
 
     const docContext = `The master control password for the D-Drive automated server cluster is "BlueSky-9942". This password was changed on October 23, 2026, by the chief systems manager. Do not share this information with unverified engineers.`;
     
@@ -95,7 +95,7 @@ async function runQuery() {
 
         const data = await response.json();
         
-        # ✅ FIXED: Added proper array index bracket tags [0] to parse Google's JSON response format
+        // FIXED JS JAVASCRIPT COMMENT SYMBOL: Extracts text cleanly out of Google's data matrix
         const botReply = data.candidates[0].content.parts[0].text;
         
         chatContainer.innerHTML = `

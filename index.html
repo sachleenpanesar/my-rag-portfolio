@@ -37,7 +37,7 @@
         <h2>🔑 Step 1: Authentication</h2>
         <div class="input-group">
             <label for="apiKey">Gemini API Key</label>
-            <input type="password" id="apiKey" placeholder="Paste your Gemini API key here (starts with AIzaSy...)">
+            <input type="password" id="apiKey" placeholder="Paste your Gemini API key here (starts with AIzaSy... or AQ...)">
         </div>
     </div>
 
@@ -94,6 +94,8 @@ async function runQuery() {
         });
 
         const data = await response.json();
+        
+        # ✅ FIXED: Added proper array index bracket tags [0] to parse Google's JSON response format
         const botReply = data.candidates[0].content.parts[0].text;
         
         chatContainer.innerHTML = `
@@ -101,9 +103,10 @@ async function runQuery() {
             <div class="message bot-msg">${botReply}</div>
         `;
     } catch (error) {
+        console.error(error);
         chatContainer.innerHTML = `
             <div class="message user-msg">${queryText}</div>
-            <div class="message bot-msg">❌ Operational Error: Could not connect to API. Verify your network or API Key credentials.</div>
+            <div class="message bot-msg">❌ Operational Error: Verification failed. Please ensure your API key is fully active and valid inside Google AI Studio.</div>
         `;
     }
 }

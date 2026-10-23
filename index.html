@@ -99,8 +99,8 @@ async function runQuery() {
 
         const data = await response.json();
         
-        // ✅ FIXED EXACT JSON NAVIGATION INDEXES BELOW:
-        if (data.candidates && data.candidates[0].content.parts[0].text) {
+        // Exact production navigation mapping paths for Google candidates array payloads
+        if (data.candidates && data.candidates[0] && data.candidates[0].content && data.candidates[0].content.parts && data.candidates[0].content.parts[0]) {
             const botReply = data.candidates[0].content.parts[0].text;
             chatContainer.innerHTML = `
                 <div class="message user-msg">${queryText}</div>

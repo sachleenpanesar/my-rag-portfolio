@@ -17,17 +17,16 @@
         textarea { width: 100%; padding: 12px; border: 1px solid #d1d5db; border-radius: 8px; box-sizing: border-box; font-size: 1rem; background-color: #f9fafb; resize: vertical; }
         textarea:focus { outline: none; border-color: #2563eb; background-color: white; }
         
-        /* Premium Chips / Example Buttons Styling */
         .chip-container { display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 15px; }
-        .chip { background-color: #eff6ff; color: #2563eb; border: 1px solid #bfdbfe; padding: 8px 14px; border-radius: 20px; font-size: 0.9rem; font-weight: 500; cursor: pointer; transition: all 0.2s; }
+        .chip { background-color: #eff6ff; color: #2563eb; border: 1px solid #bfdbfe; padding: 8px 14px; border-radius: 20px; font-size: 0.9rem; font-weight: 500; cursor: pointer; transition: all 0.2s; user-select: none; }
         .chip:hover { background-color: #dbeafe; color: #1d4ed8; border-color: #93c5fd; }
         
         button { background-color: #2563eb; color: white; border: none; padding: 12px 24px; font-size: 1rem; font-weight: 600; border-radius: 8px; cursor: pointer; transition: background 0.2s; width: 100%; margin-top: 5px; }
         button:hover { background-color: #1d4ed8; }
         .chat-box { background-color: #f9fafb; border: 1px solid #e5e7eb; border-radius: 8px; min-height: 150px; max-height: 300px; overflow-y: auto; padding: 15px; margin-top: 15px; }
-        .message { margin-bottom: 15px; padding: 10px 14px; border-radius: 8px; max-width: 85%; line-height: 1.5; }
+        .message { margin-bottom: 15px; padding: 10px 14px; border-radius: 8px; max-width: 85%; line-height: 1.5; font-size: 1rem; }
         .user-msg { background-color: #dbeafe; color: #1e40af; margin-left: auto; text-align: right; }
-        .bot-msg { background-color: #e5e7eb; color: #1f2937; }
+        .bot-msg { background-color: #e5e7eb; color: #1f2937; white-space: pre-wrap; }
         .doc-box { background-color: #fef3c7; border-left: 4px solid #d97706; padding: 15px; border-radius: 4px; font-family: monospace; font-size: 0.9rem; white-space: pre-wrap; }
     </style>
 </head>
@@ -39,7 +38,6 @@
 </div>
 
 <div class="container">
-    <!-- Active Knowledge Base Display -->
     <div class="card">
         <h2>🗂️ Stored Context Documentation (Active Knowledge Base)</h2>
         <p>This text block mimics the local .txt files read dynamically from disk during localized runtime operations:</p>
@@ -48,12 +46,10 @@ This password was changed on October 23, 2026, by the chief systems manager.
 Do not share this information with unverified engineers.</div>
     </div>
 
-    <!-- Interaction Hub -->
     <div class="card">
         <h2>💬 Interactive Query Prompt</h2>
         <p style="margin-bottom: 20px; font-size: 0.95rem; color: #6b7280;">Click one of the quick-example suggestions below to test the context injection automatically, or type your own question:</p>
         
-        <!-- ✅ NEW: Quick Click Prompt Chips -->
         <div class="chip-container">
             <div class="chip" onclick="fillPrompt('What is the server cluster password?')">🔑 Ask for Password</div>
             <div class="chip" onclick="fillPrompt('When was the password changed and by whom?')">📅 Ask for Date & Manager</div>
@@ -72,7 +68,6 @@ Do not share this information with unverified engineers.</div>
 </div>
 
 <script>
-// ✅ QUICK FILL HELPER FUNCTION
 function fillPrompt(text) {
     document.getElementById("query").value = text;
 }
@@ -80,8 +75,6 @@ function fillPrompt(text) {
 async function runQuery() {
     const queryText = document.getElementById("query").value.trim();
     const chatContainer = document.getElementById("chatContainer");
-
-    // ✅ SECURE PRE-ADDED KEY (Automatically authenticates recruiters)
     const key = "AQ.Ab8RN6KLV7-YJ5zJKpufzQ2sfwGOt9ihnRekasRZ7pSd19EhCw";
 
     if (!queryText) {
@@ -95,7 +88,6 @@ async function runQuery() {
     
     const systemPrompt = `Answer the user's question using ONLY the provided context blocks. If the answer cannot be found in the context, state clearly that you do not have that information.\n\nCONTEXT:\n${docContext}\n\nQUESTION:\n${queryText}`;
 
-    // Target the specific model endpoint
     const url = `https://googleapis.com{key}`;
     
     try {
@@ -106,12 +98,17 @@ async function runQuery() {
         });
 
         const data = await response.json();
-        const botReply = data.candidates[0].content.parts[0].text;
         
-        chatContainer.innerHTML = `
-            <div class="message user-msg">${queryText}</div>
-            <div class="message bot-msg">${botReply}</div>
-        `;
+        // ✅ FIXED EXACT JSON NAVIGATION INDEXES BELOW:
+        if (data.candidates && data.candidates[0].content.parts[0].text) {
+            const botReply = data.candidates[0].content.parts[0].text;
+            chatContainer.innerHTML = `
+                <div class="message user-msg">${queryText}</div>
+                <div class="message bot-msg">${botReply}</div>
+            `;
+        } else {
+            throw new Error("Unexpected API response structure");
+        }
     } catch (error) {
         console.error(error);
         chatContainer.innerHTML = `
